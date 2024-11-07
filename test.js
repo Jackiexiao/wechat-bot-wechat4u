@@ -4,7 +4,11 @@ import { PROXY_CONFIG } from "./config/config-proxy.js";
 import * as CHATGPT_CONFIG from "./config/config-chatgpt.js"
 
 //代理配置
-const agent = new HttpsProxyAgent(PROXY_CONFIG);
+let agent = null;
+if (PROXY_CONFIG.enable) {
+    agent = new HttpsProxyAgent(PROXY_CONFIG);
+}
+
 //对话参数配置
 let data = JSON.stringify({
     "model": CHATGPT_CONFIG.CHATGPT_MODEL,
@@ -41,3 +45,4 @@ axios.request(config)
         console.log("异常消息：" + error);
         console.log("\n 测试失败")
     });
+

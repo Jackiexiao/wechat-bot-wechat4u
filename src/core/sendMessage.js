@@ -130,7 +130,11 @@ async function forwardMsg(MyMessage,message) {
     // })
 
     //3、发送ChatGPT
-    const agent = new HttpsProxyAgent(PROXY_CONFIG);
+    // 是否启用代理
+    let agent = null;
+    if (PROXY_CONFIG.enable) {
+        agent = new HttpsProxyAgent(PROXY_CONFIG);
+    }
     //对话参数配置
     let data = JSON.stringify({
         "model": CHATGPT_CONFIG.CHATGPT_MODEL,
@@ -181,9 +185,9 @@ function sendSay(message, reStr, MyMessage) {
     const isROP = isRoomOrPrivate(MyMessage);
     //房间内消息
     if (isROP == 1) {
-        message.room().say(`${(reStr)}\n @by ${MYCONFIG.robotName}`, message.talker())
+        message.room().say(`${(reStr)}`, message.talker())
     } else if (isROP == 2) {
         //私聊消息
-        message.talker().say(`${(reStr)}\n @by ${MYCONFIG.robotName}`)
+        message.talker().say(`${(reStr)}\n`)
     }
 }

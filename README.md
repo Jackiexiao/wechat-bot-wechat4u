@@ -27,12 +27,12 @@ wechat-bot-wechat4u，基于`wechat4u`进行开发，接收微信账号消息并
 
 ###  NodeJS运行
   
-> 请确认NodeJS版本为18.0.0
 > 请确保您的账号可以登录[网页版微信](https://wx.qq.com/)
+> 不过你可以试一下，有时候也能登录本项目的微信
 
 - 克隆本项目：`git clone https://github.com/labi-xiaoxin/wechat-bot-wechat4u.git`
 - 进入本项目:`cd wechat-bot-wechat4u`
-- 安装依赖项:`npm install`
+- 安装依赖项:`pnpm install`
 - 自定义相关配置：
   - `config.js`:该文件配置机器人名称、群聊白名单、私聊白名单、（如有）后端接口
   - `config-chatgpt.js`:该文件配置ChatGPT：接口请求地址、apikey、model
@@ -41,8 +41,8 @@ wechat-bot-wechat4u，基于`wechat4u`进行开发，接收微信账号消息并
     - 1、简单返回消息：直接返回定义好的消息
     - 2、接口返回消息：将消息封装好，通过Axios发送请求至后端，后端处理返回消息（如需要实现AI机器人等功能，可自行编写后端）
     - 3、请求ChatGPT：将消息通过Axios发送请求至OpenAI，处理完成后响应消息。
-- 测试项目：`npm run test`
-- 启动项目:`npm run dev`
+- 测试项目：`pnpm run test`
+- 启动项目:`pnpm run dev`
 
 项目正常运行日志如下：
 ```log
