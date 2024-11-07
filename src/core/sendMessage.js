@@ -45,7 +45,8 @@ export async function sendMessage(message) {
     }
 
     // 处理打卡消息 - 移到最前面处理
-    if (MyMessage.text.includes('#打卡')) {
+    const trimmedText = MyMessage.text.trim();
+    if (trimmedText.slice(0, 5).replace(/\s/g, '').includes('打卡')) {
         console.log("检测到打卡消息");
         // 只在白名单群聊中记录打卡信息并回复
         if (MyMessage.room && MYCONFIG.roomWhiteList.includes(MyMessage.roomName)) {
