@@ -7,7 +7,7 @@ import * as CHATGPT_CONFIG from "../../config/config-chatgpt.js"
 import { ChatGPTModel } from "../entity/ChatGPTModel.js"
 import { HttpsProxyAgent } from "https-proxy-agent"
 import { PROXY_CONFIG } from "../../config/config-proxy.js";
-import { CheckInRecorder } from '../utils/checkInRecorder.js';
+import { CheckInRecorder, shouldRecord } from '../utils/checkInRecorder.js';
 import { PROMPTS } from '../../config/config-prompt.js';
 
 
@@ -30,13 +30,13 @@ export async function sendMessage(message) {
         listenerId: await message.payload.listenerId == undefined ? null : message.payload.listenerId,
         roomId: await message.payload.roomId == undefined ? null : message.payload.roomId
     }
-    
+
     console.log("收到消息：", {
         talkerName: MyMessage.talkerName,
         roomName: MyMessage.roomName,
         text: MyMessage.text,
         isRoom: !!MyMessage.room,
-        inWhitelist: MYCONFIG.roomWhiteList.includes(MyMessage.roomName)
+        inWhitelist: shouldRecord(MyMessage.roomName)
     });
 
     // 先检查基本条件
@@ -46,7 +46,7 @@ export async function sendMessage(message) {
 
     // 处理打卡消息 - 移到最前面处理
     const trimmedText = MyMessage.text.trim();
-    if (trimmedText.slice(0, 5).replace(/\s/g, '').includes('打卡')) {
+    if (trimmedText.slice(0, 5).replace(/\s/g, '').includes('#打卡')) {
         console.log("检测到打卡消息");
         // 只在白名单群聊中记录打卡信息并回复
         if (MyMessage.room && (MYCONFIG.roomWhiteList.includes(MyMessage.roomName) || MyMessage.roomName.includes('bot'))) {
@@ -123,7 +123,7 @@ function checkIfNeedReply(message) {
  */
 function isRoomOrPrivate(message) {
     //房间内的消息需要@ 且群聊在名单内
-    if (message.room != null && message.mentionSelf == true && MYCONFIG.roomWhiteList.includes(message.roomName)) {
+    if (message.room != null && message.mentionSelf == true && shouldRecord(message.roomName)) {
         return 1;
     }//非房间内消息，且发送人备注在名单内
     else if (message.room == null && MYCONFIG.aliasWhiteList.includes(message.alias)) {
@@ -137,7 +137,7 @@ function isRoomOrPrivate(message) {
  * 发送后端处理消息，并返回发送微信
  * @param {Message} message 消息对象
  */
-async function forwardMsg(MyMessage,message) {
+async function forwardMsg(MyMessage, message) {
     log.info(`\n 消息发送时间:${MyMessage.date} 
     消息发送人:${MyMessage.talkerName} 
     消息类型:${MyMessage.type} 
@@ -212,15 +212,15 @@ async function forwardMsg(MyMessage,message) {
     };
 
     axios.request(config)
-    .then((response) => {
-        var reMsg = response.data.choices[0].message.content;
-        sendSay(message, reMsg,MyMessage);
-    })
-    .catch((error) => {
-        log.error(`异常响应：${JSON.stringify(error)}`);
-        sendSay(message, `异常响应:${JSON.stringify(error)}`,MyMessage);
-        return `异常响应：${JSON.stringify(error)}`;
-    });
+        .then((response) => {
+            var reMsg = response.data.choices[0].message.content;
+            sendSay(message, reMsg, MyMessage);
+        })
+        .catch((error) => {
+            log.error(`异常响应：${JSON.stringify(error)}`);
+            sendSay(message, `异常响应:${JSON.stringify(error)}`, MyMessage);
+            return `异常响应：${JSON.stringify(error)}`;
+        });
 }
 
 /**

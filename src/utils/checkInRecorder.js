@@ -1,16 +1,29 @@
 import fs from 'fs/promises';
 import path from 'path';
-import { roomWhiteList } from '../../config/config.js';
+import { roomWhiteList, roomWhiteKeyWordList } from '../../config/config.js';
 
 const CHECKIN_FILE = 'data/checkins.json';
+
+export function shouldRecord(roomName) {
+
+    if (!roomName) {
+        return false;
+    }
+    // 检查房间是否在白名单中
+    const inWhiteList = roomWhiteList.includes(roomName);
+    // 检查房间名是否包含任何关键词
+    const containsKeyWord = roomWhiteKeyWordList.some(keyword => roomName.includes(keyword));
+    // 如果房间在白名单中或房间名包含关键词，则记录打卡信息
+    return inWhiteList || containsKeyWord;
+}
 
 export class CheckInRecorder {
     static async recordCheckIn(message) {
         const room = await message.room();
         const roomName = await room?.topic();
-        
+
         // 只记录白名单群聊中的打卡信息
-        if (room && !roomWhiteList.includes(roomName)) {
+        if (room && !shouldRecord(roomName)) {
             return false;
         }
 
@@ -39,7 +52,7 @@ export class CheckInRecorder {
 
             // Write back to file
             await fs.writeFile(CHECKIN_FILE, JSON.stringify(records, null, 2));
-            
+
             return true;
         } catch (error) {
             console.error('Failed to record check-in:', error);
