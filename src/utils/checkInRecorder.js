@@ -4,8 +4,7 @@ import { roomWhiteList, roomWhiteKeyWordList } from '../../config/config.js';
 
 const CHECKIN_FILE = 'data/checkins.json';
 
-export function shouldRecord(roomName) {
-
+export function isRoomInWhiteList(roomName) {
     if (!roomName) {
         return false;
     }
@@ -23,7 +22,7 @@ export class CheckInRecorder {
         const roomName = await room?.topic();
 
         // 只记录白名单群聊中的打卡信息
-        if (room && !shouldRecord(roomName)) {
+        if (room && !isRoomInWhiteList(roomName)) {
             return false;
         }
 
