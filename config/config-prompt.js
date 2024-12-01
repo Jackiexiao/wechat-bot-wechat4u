@@ -77,6 +77,5 @@ export const PROMPTS = {
 
     // 默认系统角色设定
     SYSTEM_ROLE: `${ROLE_SETTING} ${PEACEMAKER_ROLE_SETTING}`,
-
     // 其他prompt模板可以继续添加...
 } 
