@@ -303,7 +303,7 @@ async function sendChatGPTResponse(message, prompt, MyMessage, isCheckIn = false
 
     // 请求参数配置
     let config = {
-        timeout: 120000,
+        timeout: 200000,
         method: 'post',
         maxBodyLength: Infinity,
         url: CHATGPT_CONFIG.CHATGPT_URL,
@@ -326,7 +326,8 @@ async function sendChatGPTResponse(message, prompt, MyMessage, isCheckIn = false
         await sendSay(message, reMsg, MyMessage, isCheckIn);
     } catch (error) {
         console.error('ChatGPT API Error:', error);
-        const errorMsg = `抱歉，我遇到了一些问题：${error.message}`;
+        // const errorMsg = `抱歉，我遇到了一些问题：${error.message}`;
+        const errorMsg = `抱歉，我遇到了一些问题`;
         await sendSay(message, errorMsg, MyMessage, isCheckIn);
     }
 }
