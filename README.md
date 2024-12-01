@@ -54,8 +54,8 @@ WSL: curl -fsSL https://bun.sh/install | bash
     - 1、简单返回消息：直接返回定义好的消息
     - 2、接口返回消息：将消息封装好，通过Axios发送请求至后端，后端处理返回消息（如需要实现AI机器人等功能，可自行编写后端）
     - 3、请求ChatGPT：将消息通过Axios发送请求至OpenAI，处理完成后响应消息。
-- 测试项目：`bun test`
-- 启动项目：`bun dev`
+- 测试你的 APIKEY 是否可用：`bun run test`
+- 临时启动项目用于调试：`bun run dev`
 
 项目正常运行日志如下：
 ```log
@@ -82,59 +82,25 @@ WSL: curl -fsSL https://bun.sh/install | bash
 ```
 
 ## 📦 部署指南
+- 可以购买云端服务器，也可以使用自己的电脑（不关机即可）
+- 我们使用 PM2 来管理项目，部署和维护变得更加简单
 
-### PM2 部署（推荐：可长期稳定运行）
-可以购买云端服务器，也可以使用自己的电脑（不关机即可）
-
-PM2 是一个强大的生产环境进程管理器，它可以帮助你管理和保持应用程序的在线运行。我们已经集成了 PM2 的配置（ecosystem.config.cjs），使得部署和维护变得更加简单。
-
-1. **安装依赖**
-```bash
-# 安装 Bun（如果未安装）
-curl -fsSL https://bun.sh/install | bash
-
-# 安装项目依赖
-bun install
 ```
+# 全局安装 pm2
+bun install pm2 -g
 
-2. **启动服务**
-```bash
-# 使用 PM2 启动服务
-bun run start
+# 启动
+pm2 start ecosystem.config.cjs
 
-# 查看服务状态
-pm2 status
+# 查看日志（并扫码登录） 
+pm2 logs wechat-bot --lines 30
+
+# 更新代码后重启项目 
+pm2 restart wechat-bot
+
+# 删除项目 
+pm2 delete wechat-bot
 ```
-
-3. **查看日志**
-```bash
-# 查看实时日志
-pm2 logs wechat-bot
-
-# 查看历史日志
-pm2 logs wechat-bot --lines 1000
-```
-
-4. **服务管理**
-```bash
-# 停止服务
-bun run stop
-
-# 重启服务
-bun run restart
-
-# 查看服务监控面板
-pm2 monit
-```
-
-### PM2 特性
-
-- **自动重启**：服务崩溃时自动重启
-- **负载均衡**：可配置多进程运行（当前配置为单进程）
-- **日志管理**：自动日志分割，避免日志文件过大
-- **性能监控**：CPU/内存监控，异常告警
-- **优雅重启**：更新代码时无缝重启，不影响服务
-- **环境配置**：支持开发和生产环境配置分离
 
 ### 日志说明
 
