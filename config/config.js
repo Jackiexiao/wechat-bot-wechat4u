@@ -13,3 +13,6 @@ export const dakaKeyWordList = ['#打卡', '＃打卡']
 
 // 后端消息处理接口
 export const msgPushUrl = "http://127.0.0.1:8078/wx/order/wxMsg"
+
+// 最大历史记录条数（单个群聊中）
+export const maxHistoryCount = 30

@@ -9,7 +9,7 @@ import { HttpsProxyAgent } from "https-proxy-agent"
 import { PROXY_CONFIG } from "../../config/config-proxy.js";
 import { CheckInRecorder, isRoomInWhiteList } from '../utils/checkInRecorder.js';
 import { PROMPTS } from '../../config/config-prompt.js';
-
+import { chatHistoryManager } from '../utils/chatHistoryManager.js';
 
 /**
  * 处理消息是否需要回复
@@ -42,6 +42,11 @@ export async function sendMessage(message) {
     // 先检查基本条件
     if (MyMessage.self || MyMessage.type !== MessageType.MESSAGE_TYPE_TEXT) {
         return;
+    }
+
+    // 如果是群消息，记录到历史中（无论是否@机器人）
+    if (MyMessage.room && MyMessage.roomId) {
+        chatHistoryManager.addMessage(MyMessage.roomId, "user", MyMessage.text, MyMessage.talkerName);
     }
 
     // 处理打卡消息 - 移到最前面处理
@@ -250,11 +255,32 @@ function sendSay(message, reStr, MyMessage, isCheckIn = false) {
 }
 
 async function sendChatGPTResponse(message, prompt, MyMessage, isCheckIn = false) {
+    // 获取聊天ID（群聊用roomId，私聊用talkerId）
+    const chatId = MyMessage.roomId || MyMessage.talkerId;
+    
+    // 注意：用户的消息已经在sendMessage函数中添加过了，这里不需要重复添加
+    // 只有私聊消息需要在这里添加
+    if (!MyMessage.room) {
+        chatHistoryManager.addMessage(chatId, "user", prompt, MyMessage.talkerName);
+    }
+
     // 是否启用代理
     let agent = null;
     if (PROXY_CONFIG.enable) {
         agent = new HttpsProxyAgent(PROXY_CONFIG);
     }
+
+    // 获取历史消息
+    const history = chatHistoryManager.getHistory(chatId);
+    
+    // 打印历史消息日志
+    console.log("=== 当前对话的历史消息 ===");
+    console.log(`群/用户ID: ${chatId}`);
+    console.log(`历史消息数量: ${history.length}`);
+    // history.forEach((msg, index) => {
+    //     console.log(`[${index + 1}] ${msg.role}: ${msg.content}`);
+    // });
+    // console.log("========================");
 
     // 对话参数配置
     let data = JSON.stringify({
@@ -264,6 +290,7 @@ async function sendChatGPTResponse(message, prompt, MyMessage, isCheckIn = false
                 "role": "system",
                 "content": PROMPTS.SYSTEM_ROLE
             },
+            ...history, // 添加历史消息
             {
                 "role": "user",
                 "content": prompt
@@ -292,6 +319,10 @@ async function sendChatGPTResponse(message, prompt, MyMessage, isCheckIn = false
         const response = await axios.request(config);
         const reMsg = response.data.choices[0].message.content;
         console.log(`ChatGPT 回复：${reMsg}`);
+        
+        // 将AI的回复也添加到历史记录中
+        chatHistoryManager.addMessage(chatId, "assistant", reMsg);
+        
         await sendSay(message, reMsg, MyMessage, isCheckIn);
     } catch (error) {
         console.error('ChatGPT API Error:', error);
